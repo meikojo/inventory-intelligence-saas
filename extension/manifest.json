@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Inventory Intelligence Sync",
+  "version": "1.0.0",
+  "description": "Smart automated sales report syncing from Amazon Seller Central to Inventory Intelligence SaaS.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "*://*.sellercentral.amazon.com/*",
+    "*://*.sellercentral.amazon.eg/*",
+    "*://*.sellercentral.amazon.sa/*",
+    "*://*.sellercentral.amazon.ae/*",
+    "https://inventory-backend-eosin.vercel.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.sellercentral.amazon.com/*",
+        "*://*.sellercentral.amazon.eg/*",
+        "*://*.sellercentral.amazon.sa/*",
+        "*://*.sellercentral.amazon.ae/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Inventory Intelligence Sync"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

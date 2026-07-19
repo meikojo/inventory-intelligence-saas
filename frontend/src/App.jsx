@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
+import AdminDashboard from './components/AdminDashboard';
 import './index.css';
 
 import StoresManager from './components/StoresManager';
@@ -12,17 +13,25 @@ const SettingsPanel = () => <div className="glass-card"><h2>الإعدادات</
 
 function App() {
   const [session, setSession] = useState(null);
+  const [userRole, setUserRole] = useState('user');
   const [activeTab, setActiveTab] = useState('stores');
+
+  const fetchUserRole = async (userId) => {
+    const { data } = await supabase.from('users').select('role').eq('id', userId).single();
+    if (data) setUserRole(data.role);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) fetchUserRole(session.user.id);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) fetchUserRole(session.user.id);
     });
 
     return () => subscription.unsubscribe();
@@ -39,8 +48,9 @@ function App() {
   const renderContent = () => {
     switch(activeTab) {
       case 'stores': return <StoresManager />;
-      case 'ingest': return <DataIngest />;
-      case 'analysis': return <Analysis />;
+      case 'admin': return userRole === 'admin' ? <AdminDashboard /> : <StoresManager />;
+      case 'dashboard': return <Analysis />;
+      case 'upload': return <DataIngest />;
       case 'settings': return <SettingsPanel />;
       default: return <StoresManager />;
     }
@@ -72,15 +82,15 @@ function App() {
           </button>
           
           <button 
-            onClick={() => setActiveTab('ingest')}
-            style={navBtnStyle(activeTab === 'ingest')}
+            onClick={() => setActiveTab('upload')}
+            style={navBtnStyle(activeTab === 'upload')}
           >
-            <Upload size={20} /> معالجة البيانات
+            <Upload size={20} /> رفع البيانات
           </button>
           
           <button 
-            onClick={() => setActiveTab('analysis')}
-            style={navBtnStyle(activeTab === 'analysis')}
+            onClick={() => setActiveTab('dashboard')}
+            style={navBtnStyle(activeTab === 'dashboard')}
           >
             <LayoutDashboard size={20} /> التحليل
           </button>
@@ -91,6 +101,15 @@ function App() {
           >
             <Settings size={20} /> الإعدادات
           </button>
+
+          {userRole === 'admin' && (
+            <button 
+              onClick={() => setActiveTab('admin')}
+              style={{...navBtnStyle(activeTab === 'admin'), marginTop: '16px', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)'}}
+            >
+              <ShieldAlert size={20} /> الإدارة المركزية
+            </button>
+          )}
         </nav>
 
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
