@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert, FileSpreadsheet } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
 import AdminDashboard from './components/AdminDashboard';
+import ColumnMapper from './components/ColumnMapper';
 import './index.css';
 
 import StoresManager from './components/StoresManager';
@@ -51,6 +52,7 @@ function App() {
       case 'admin': return userRole === 'admin' ? <AdminDashboard /> : <StoresManager />;
       case 'dashboard': return <Analysis />;
       case 'upload': return <DataIngest />;
+      case 'mapper': return <ColumnMapper />;
       case 'settings': return <SettingsPanel />;
       default: return <StoresManager />;
     }
@@ -86,6 +88,13 @@ function App() {
             style={navBtnStyle(activeTab === 'upload')}
           >
             <Upload size={20} /> رفع البيانات
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('mapper')}
+            style={navBtnStyle(activeTab === 'mapper')}
+          >
+            <FileSpreadsheet size={20} /> قوالب الربط
           </button>
           
           <button 
