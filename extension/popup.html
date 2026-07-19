@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory SaaS Sync</title>
+  <style>
+    :root {
+      --bg-primary: #0B0F19;
+      --bg-secondary: #111827;
+      --accent-primary: #3B82F6;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+    }
+    body {
+      width: 320px;
+      height: 400px;
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.2rem;
+      color: var(--accent-primary);
+      text-align: center;
+    }
+    p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: 0;
+    }
+    .input-field {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 12px;
+      border-radius: 8px;
+      color: white;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .btn-primary {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .status {
+      margin-top: auto;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.85rem;
+      background: var(--bg-secondary);
+    }
+    #loggedInView {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .sync-btn {
+      background: #10B981;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 24px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Inventory Sync</h2>
+  <p>المزامن الذكي لتقارير أمازون</p>
+
+  <div id="loginView">
+    <input type="email" id="email" class="input-field" placeholder="البريد الإلكتروني" />
+    <input type="password" id="password" class="input-field" placeholder="كلمة المرور" />
+    <button id="loginBtn" class="btn-primary">تسجيل الدخول</button>
+    <div id="loginError" style="color: #EF4444; font-size: 0.8rem; margin-top: 8px; text-align: center;"></div>
+  </div>
+
+  <div id="loggedInView">
+    <div style="width: 64px; height: 64px; background: rgba(59,130,246,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 16px 0;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+    </div>
+    <div style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+      متصل بحساب: <br><strong id="userEmail" style="color: white;"></strong>
+    </div>
+    <button id="syncNowBtn" class="sync-btn">بدء المزامنة الآن</button>
+    <button id="logoutBtn" style="background: none; border: none; color: var(--text-secondary); text-decoration: underline; cursor: pointer; margin-top: 8px;">تسجيل الخروج</button>
+  </div>
+
+  <div class="status" id="statusMsg">جاهز للعمل</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
