@@ -39,7 +39,7 @@ const Auth = ({ onLogin }) => {
       alignItems: 'center',
       justifyContent: 'center',
       background: 'var(--bg-primary)',
-      backgroundImage: 'radial-gradient(circle at top right, rgba(224, 138, 46, 0.05), transparent 40%), radial-gradient(circle at bottom left, rgba(63, 166, 107, 0.05), transparent 40%)'
+      backgroundImage: 'radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.05), transparent 40%)'
     }}>
       <div className="glass-card" style={{
         width: '100%',
@@ -61,7 +61,7 @@ const Auth = ({ onLogin }) => {
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
           <div style={{
             width: '64px', height: '64px',
-            background: 'rgba(224, 138, 46, 0.1)',
+            background: 'rgba(59, 130, 246, 0.1)',
             borderRadius: '16px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',

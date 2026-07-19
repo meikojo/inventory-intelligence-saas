@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Core palette based on Master Plan Phase 9 */
-  --bg-primary: #14110F;      /* Deep warm charcoal */
-  --bg-secondary: #1E1A18;    /* Slightly lighter charcoal */
-  --bg-card: rgba(30, 26, 24, 0.8);  /* Glassmorphism */
+  /* Core palette - Cool Professional SaaS Theme */
+  --bg-primary: #0B0F19;      /* Deep space cool blue/black */
+  --bg-secondary: #111827;    /* Slate 900 */
+  --bg-card: rgba(17, 24, 39, 0.7);  /* Glassmorphism */
   
-  --accent-primary: #E08A2E;  /* Burnt Orange (Alerts / Action) */
-  --accent-primary-hover: #F29633;
-  --accent-success: #3FA66B;  /* Healthy green */
+  --accent-primary: #3B82F6;  /* Trustworthy Ocean Blue */
+  --accent-primary-hover: #2563EB;
+  --accent-success: #10B981;  /* Calming Emerald */
   --accent-danger: #EF4444;   /* Red */
   
-  --text-primary: #F1F5F9;    /* Light text */
-  --text-secondary: #94A3B8;  /* Muted text */
-  --border: rgba(148, 163, 184, 0.15); /* Subtle border */
+  --text-primary: #F8FAFC;    /* Slate 50 */
+  --text-secondary: #94A3B8;  /* Slate 400 */
+  --border: rgba(148, 163, 184, 0.1); /* Subtle cool border */
 
   --font-arabic: 'IBM Plex Sans Arabic', sans-serif;
   --font-numbers: 'Inter', sans-serif;
