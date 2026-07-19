@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert, FileSpreadsheet } from 'lucide-react';
+import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert, FileSpreadsheet, User } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
 import AdminDashboard from './components/AdminDashboard';
@@ -7,10 +7,13 @@ import ColumnMapper from './components/ColumnMapper';
 import './index.css';
 
 import StoresManager from './components/StoresManager';
+import DataIngest from './components/DataIngest';
+import Analysis from './components/Analysis';
+import SettingsPanel from './components/SettingsPanel';
+import Profile from './components/Profile';
 
-const DataIngest = () => <div className="glass-card"><h2>رفع البيانات</h2><p>قريباً: ربط الأعمدة الذكي ورفع الملفات.</p></div>;
-const Analysis = () => <div className="glass-card"><h2>التحليل الذكي</h2><p>قريباً: عرض نتائج محرك الرياضيات.</p></div>;
-const SettingsPanel = () => <div className="glass-card"><h2>الإعدادات</h2><p>قريباً: ضبط خصائص المتاجر وحدود المخاطر.</p></div>;
+// Mock settings panel until built
+// const SettingsPanel = () => <div className="glass-card"><h2>الإعدادات</h2><p>قريباً: ضبط خصائص المتاجر وحدود المخاطر.</p></div>;
 
 function App() {
   const [session, setSession] = useState(null);
@@ -53,6 +56,7 @@ function App() {
       case 'dashboard': return <Analysis />;
       case 'upload': return <DataIngest />;
       case 'mapper': return <ColumnMapper />;
+      case 'profile': return <Profile />;
       case 'settings': return <SettingsPanel />;
       default: return <StoresManager />;
     }
@@ -109,6 +113,13 @@ function App() {
             style={navBtnStyle(activeTab === 'settings')}
           >
             <Settings size={20} /> الإعدادات
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('profile')}
+            style={navBtnStyle(activeTab === 'profile')}
+          >
+            <User size={20} /> الملف الشخصي
           </button>
 
           {userRole === 'admin' && (
