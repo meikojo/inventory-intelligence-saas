@@ -15,12 +15,14 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     try {
       setLoading(true);
-      // Fetch users count
-      const { count: usersCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
-      // Fetch stores count
-      const { count: storesCount } = await supabase.from('stores').select('*', { count: 'exact', head: true });
+      // Fetch stats using RPC (bypasses RLS securely)
+      const { data: statsData, error: statsError } = await supabase.rpc('get_admin_stats');
       
-      setStats({ users: usersCount || 0, stores: storesCount || 0 });
+      if (!statsError && statsData) {
+        setStats({ users: statsData.users || 0, stores: statsData.stores || 0 });
+      } else {
+        console.error("Failed to fetch admin stats:", statsError);
+      }
 
       // Fetch dynamic rules
       const { data: rulesData } = await supabase
