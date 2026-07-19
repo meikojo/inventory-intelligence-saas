@@ -245,7 +245,7 @@ const Analysis = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '12px' }}>SKU</th>
+                    <th style={{ padding: '12px' }}>ASIN</th>
                     <th style={{ padding: '12px' }}>الكمية الحالية</th>
                     <th style={{ padding: '12px' }}>آخر تحديث</th>
                   </tr>
@@ -253,7 +253,11 @@ const Analysis = () => {
                 <tbody>
                   {inventoryData.map((item) => (
                     <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.sku}</td>
+                      <td style={{ padding: '12px', fontWeight: 'bold' }}>
+                        <a href={`https://www.amazon.com/dp/${item.sku}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+                          {item.sku}
+                        </a>
+                      </td>
                       <td style={{ padding: '12px', color: item.quantity < 10 ? 'var(--accent-danger)' : 'var(--accent-success)' }}>
                         {item.quantity}
                       </td>
@@ -285,7 +289,7 @@ const Analysis = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>
-                    <th style={{ padding: '12px' }}>المنتج (SKU)</th>
+                    <th style={{ padding: '12px' }}>المنتج (ASIN)</th>
                     <th style={{ padding: '12px' }}>المخزون الحالي</th>
                     <th style={{ padding: '12px' }}>متوسط البيع (ADS)</th>
                     <th style={{ padding: '12px' }}>نقطة إعادة الطلب</th>
@@ -297,7 +301,11 @@ const Analysis = () => {
                   {restockData.length > 0 ? (
                     restockData.map((item, idx) => (
                       <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: item.needsRestock ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
-                        <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.sku}</td>
+                        <td style={{ padding: '12px', fontWeight: 'bold' }}>
+                          <a href={`https://www.amazon.com/dp/${item.sku}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+                            {item.sku}
+                          </a>
+                        </td>
                         <td style={{ padding: '12px' }}>{item.stock}</td>
                         <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>{item.ads} / يوم</td>
                         <td style={{ padding: '12px' }}>{item.reorderPoint}</td>
