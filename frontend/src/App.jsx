@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert, FileSpreadsheet, User } from 'lucide-react';
+import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight, ShieldAlert, FileSpreadsheet, User, TrendingUp, BarChart2, Link } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
 import AdminDashboard from './components/AdminDashboard';
@@ -8,7 +8,8 @@ import './index.css';
 
 import StoresManager from './components/StoresManager';
 import DataIngest from './components/DataIngest';
-import Analysis from './components/Analysis';
+import TopSellers from './components/TopSellers';
+import AdvancedAnalysis from './components/AdvancedAnalysis';
 import SettingsPanel from './components/SettingsPanel';
 import Profile from './components/Profile';
 
@@ -51,16 +52,26 @@ function App() {
 
   const renderContent = () => {
     switch(activeTab) {
-      case 'stores': return <StoresManager />;
-      case 'admin': return userRole === 'admin' ? <AdminDashboard /> : <StoresManager />;
-      case 'dashboard': return <Analysis />;
-      case 'upload': return <DataIngest />;
+      case 'ingest': return <DataIngest />;
+      case 'top_sellers': return <TopSellers />;
+      case 'advanced_analysis': return <AdvancedAnalysis />;
       case 'mapper': return <ColumnMapper />;
-      case 'profile': return <Profile />;
+      case 'stores': return <StoresManager />;
       case 'settings': return <SettingsPanel />;
+      case 'profile': return <Profile />;
+      case 'admin': return userRole === 'admin' ? <AdminDashboard /> : <StoresManager />;
       default: return <StoresManager />;
     }
   };
+
+  const navItems = [
+    { id: 'ingest', icon: <Upload size={20} />, label: 'رفع البيانات' },
+    { id: 'top_sellers', icon: <TrendingUp size={20} />, label: 'الأكثر مبيعاً' },
+    { id: 'advanced_analysis', icon: <BarChart2 size={20} />, label: 'التحليل المتقدم' },
+    { id: 'mapper', icon: <Link size={20} />, label: 'قوالب الربط' },
+    { id: 'stores', icon: <Store size={20} />, label: 'المتاجر' },
+    { id: 'settings', icon: <Settings size={20} />, label: 'الإعدادات' },
+  ];
 
   return (
     <div className="flex" style={{ display: 'flex', minHeight: '100vh' }}>
@@ -80,40 +91,15 @@ function App() {
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-          <button 
-            onClick={() => setActiveTab('stores')}
-            style={navBtnStyle(activeTab === 'stores')}
-          >
-            <Store size={20} /> المتاجر
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('upload')}
-            style={navBtnStyle(activeTab === 'upload')}
-          >
-            <Upload size={20} /> رفع البيانات
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('mapper')}
-            style={navBtnStyle(activeTab === 'mapper')}
-          >
-            <FileSpreadsheet size={20} /> قوالب الربط
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('dashboard')}
-            style={navBtnStyle(activeTab === 'dashboard')}
-          >
-            <LayoutDashboard size={20} /> التحليل
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('settings')}
-            style={navBtnStyle(activeTab === 'settings')}
-          >
-            <Settings size={20} /> الإعدادات
-          </button>
+          {navItems.map((item) => (
+            <button 
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              style={navBtnStyle(activeTab === item.id)}
+            >
+              {item.icon} {item.label}
+            </button>
+          ))}
 
           <button 
             onClick={() => setActiveTab('profile')}
