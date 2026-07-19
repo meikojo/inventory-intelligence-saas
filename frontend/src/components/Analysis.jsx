@@ -9,7 +9,9 @@ const Analysis = () => {
   const [loading, setLoading] = useState(false);
   const [salesData, setSalesData] = useState([]);
   const [inventoryData, setInventoryData] = useState([]);
+  const [restockData, setRestockData] = useState([]);
   const [metrics, setMetrics] = useState({ totalSales: 0, totalUnits: 0, lowStockCount: 0 });
+  const [settings, setSettings] = useState(null);
 
   useEffect(() => {
     fetchStores();
@@ -32,15 +34,27 @@ const Analysis = () => {
   const fetchAnalyticsData = async () => {
     setLoading(true);
     try {
+      // 0. Fetch Settings
+      const { data: storeData } = await supabase.from('stores').select('analytics_settings').eq('id', selectedStore).single();
+      const currentSettings = storeData?.analytics_settings || { leadTime: 30, safetyStock: 15, targetDays: 90, adsPeriod: 30 };
+      setSettings(currentSettings);
+
       // 1. Fetch Sales Data
+      // Determine the cutoff date based on adsPeriod
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - currentSettings.adsPeriod);
+      const cutoffStr = cutoffDate.toISOString().split('T')[0];
+
       const { data: sales } = await supabase
         .from('sales_data')
         .select('*')
         .eq('store_id', selectedStore)
+        .gte('date', cutoffStr)
         .order('date', { ascending: true });
 
-      // Process sales data for charts (group by date)
+      // Process sales data
       const chartDataMap = {};
+      const skuSalesMap = {}; // for ADS calculation
       let totalAmount = 0;
       let totalItems = 0;
 
@@ -53,23 +67,65 @@ const Analysis = () => {
           
           totalAmount += Number(row.amount || 0);
           totalItems += Number(row.units || 0);
+
+          if (!skuSalesMap[row.sku]) skuSalesMap[row.sku] = 0;
+          skuSalesMap[row.sku] += Number(row.units || 0);
         });
       }
 
       setSalesData(Object.values(chartDataMap));
 
-      // 2. Fetch Inventory Data (Low stock threshold: < 10)
+      // 2. Fetch Inventory Data
       const { data: inv } = await supabase
         .from('inventory_data')
         .select('*')
-        .eq('store_id', selectedStore)
-        .order('quantity', { ascending: true })
-        .limit(10); // get 10 lowest stock items
+        .eq('store_id', selectedStore);
 
       let lowCount = 0;
+      const restockList = [];
+
       if (inv) {
-        setInventoryData(inv);
-        lowCount = inv.filter(i => i.quantity < 10).length;
+        // Calculate Restock logic
+        inv.forEach(item => {
+          const currentStock = Number(item.quantity || 0);
+          
+          if (currentStock < 10) lowCount++;
+
+          // Math Engine
+          const unitsSold = skuSalesMap[item.sku] || 0;
+          const ads = unitsSold / currentSettings.adsPeriod; // Average Daily Sales
+          
+          const reorderPoint = Math.ceil(ads * (currentSettings.leadTime + currentSettings.safetyStock));
+          
+          let needsRestock = false;
+          let orderQty = 0;
+
+          if (currentStock <= reorderPoint && ads > 0) {
+            needsRestock = true;
+            const targetStock = Math.ceil(ads * currentSettings.targetDays);
+            orderQty = targetStock - currentStock;
+            if (orderQty < 0) orderQty = 0;
+          }
+
+          restockList.push({
+            sku: item.sku,
+            stock: currentStock,
+            ads: ads.toFixed(2),
+            reorderPoint,
+            needsRestock,
+            orderQty
+          });
+        });
+
+        // Sort restock list by needsRestock first, then orderQty
+        restockList.sort((a, b) => {
+          if (a.needsRestock === b.needsRestock) return b.orderQty - a.orderQty;
+          return a.needsRestock ? -1 : 1;
+        });
+
+        setRestockData(restockList);
+        // Only show top 10 lowest in the small table
+        setInventoryData(inv.sort((a,b) => a.quantity - b.quantity).slice(0, 10));
       }
 
       setMetrics({
@@ -149,7 +205,9 @@ const Analysis = () => {
           {/* Charts Area */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', marginBottom: '24px' }}>
             <div className="glass-card" style={{ padding: '24px' }}>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '24px', color: 'var(--text-primary)' }}>تطور المبيعات (Sales Trend)</h3>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '24px', color: 'var(--text-primary)' }}>
+                تطور المبيعات (آخر {settings?.adsPeriod || 30} يوماً)
+              </h3>
               {salesData.length > 0 ? (
                 <div style={{ width: '100%', height: '400px' }}>
                   <ResponsiveContainer>
@@ -209,6 +267,66 @@ const Analysis = () => {
             ) : (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '24px' }}>لا توجد بيانات مخزون حالياً.</p>
             )}
+          </div>
+
+          {/* Restock Recommendations Table (Math Engine) */}
+          <div className="glass-card" style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Package size={20} color="var(--accent-primary)" />
+                المحرك الرياضي (توصيات إعادة الطلب)
+              </h3>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '12px' }}>
+                مبني على إعدادات التحليل (فترة التغطية: {settings?.targetDays} يوم)
+              </span>
+            </div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '12px' }}>المنتج (SKU)</th>
+                    <th style={{ padding: '12px' }}>المخزون الحالي</th>
+                    <th style={{ padding: '12px' }}>متوسط البيع (ADS)</th>
+                    <th style={{ padding: '12px' }}>نقطة إعادة الطلب</th>
+                    <th style={{ padding: '12px' }}>الحالة</th>
+                    <th style={{ padding: '12px' }}>الكمية المقترحة للطلب</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {restockData.length > 0 ? (
+                    restockData.map((item, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: item.needsRestock ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
+                        <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.sku}</td>
+                        <td style={{ padding: '12px' }}>{item.stock}</td>
+                        <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>{item.ads} / يوم</td>
+                        <td style={{ padding: '12px' }}>{item.reorderPoint}</td>
+                        <td style={{ padding: '12px' }}>
+                          {item.needsRestock ? (
+                            <span style={{ color: 'var(--accent-danger)', fontWeight: 'bold' }}>اطلب الآن</span>
+                          ) : (
+                            <span style={{ color: 'var(--accent-success)' }}>آمن</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '12px' }}>
+                          {item.needsRestock ? (
+                            <span style={{ display: 'inline-block', background: 'var(--accent-primary)', color: 'white', padding: '4px 12px', borderRadius: '4px', fontWeight: 'bold' }}>
+                              + {item.orderQty}
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--text-secondary)' }}>0</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>لا توجد بيانات كافية لحساب التوصيات.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </>
