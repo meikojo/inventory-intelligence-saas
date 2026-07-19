@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Store, Upload, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { supabase } from './lib/supabase';
+import Auth from './components/Auth';
 import './index.css';
 
 import StoresManager from './components/StoresManager';
@@ -9,7 +11,30 @@ const Analysis = () => <div className="glass-card"><h2>التحليل الذكي
 const SettingsPanel = () => <div className="glass-card"><h2>الإعدادات</h2><p>قريباً: ضبط خصائص المتاجر وحدود المخاطر.</p></div>;
 
 function App() {
+  const [session, setSession] = useState(null);
   const [activeTab, setActiveTab] = useState('stores');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  if (!session) {
+    return <Auth onLogin={setSession} />;
+  }
 
   const renderContent = () => {
     switch(activeTab) {
@@ -69,7 +94,10 @@ function App() {
         </nav>
 
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-          <button style={{...navBtnStyle(false), color: 'var(--accent-danger)'}}>
+          <button 
+            onClick={handleLogout}
+            style={{...navBtnStyle(false), color: 'var(--accent-danger)'}}
+          >
             <LogOut size={20} /> تسجيل الخروج
           </button>
         </div>
