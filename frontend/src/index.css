@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Core palette based on Master Plan Phase 9 */
+  --bg-primary: #14110F;      /* Deep warm charcoal */
+  --bg-secondary: #1E1A18;    /* Slightly lighter charcoal */
+  --bg-card: rgba(30, 26, 24, 0.8);  /* Glassmorphism */
+  
+  --accent-primary: #E08A2E;  /* Burnt Orange (Alerts / Action) */
+  --accent-primary-hover: #F29633;
+  --accent-success: #3FA66B;  /* Healthy green */
+  --accent-danger: #EF4444;   /* Red */
+  
+  --text-primary: #F1F5F9;    /* Light text */
+  --text-secondary: #94A3B8;  /* Muted text */
+  --border: rgba(148, 163, 184, 0.15); /* Subtle border */
+
+  --font-arabic: 'IBM Plex Sans Arabic', sans-serif;
+  --font-numbers: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-arabic);
+  min-height: 100vh;
+  direction: rtl; /* Default RTL for Arabic SaaS */
+  line-height: 1.6;
+}
+
+/* Glass Card Effect */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+/* Typography for numbers */
+.stat-number, .velocity-gauge, .en-text {
+  font-family: var(--font-numbers);
+  direction: ltr; /* keep numbers left to right */
+  display: inline-block;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-family: var(--font-arabic);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-family: var(--font-arabic);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Inputs */
+.input-field {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: var(--font-arabic);
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
