@@ -54,8 +54,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'DATE_SYNC_SUCCESS') {
     console.log("Maestro: Received success for date", syncState.datesToSync[syncState.currentIndex]);
     syncState.currentIndex++;
-    navigateNextDate();
-    sendResponse({ status: 'next_queued' });
+    
+    // Anti-Bot Logic
+    let delayMs = 0;
+    
+    if (syncState.currentIndex % 30 === 0 && syncState.currentIndex < syncState.datesToSync.length) {
+      // Every 30 days, rest for 30 minutes (1,800,000 ms)
+      console.log("Maestro: 30 days processed. Resting for 30 minutes...");
+      delayMs = 30 * 60 * 1000;
+      
+      // Notify content script about the long rest
+      chrome.tabs.sendMessage(syncState.targetTabId, { 
+        action: 'UPDATE_PROGRESS', 
+        message: `استراحة أمان لمدة 30 دقيقة (تم سحب 30 يوماً)...` 
+      });
+      
+    } else {
+      // Random delay between 5 to 7 seconds
+      delayMs = Math.floor(Math.random() * (7000 - 5000 + 1)) + 5000;
+      console.log(`Maestro: Resting for ${delayMs / 1000} seconds...`);
+    }
+
+    setTimeout(() => {
+      navigateNextDate();
+    }, delayMs);
+    
+    sendResponse({ status: 'next_queued', delayMs });
     return true;
   }
   

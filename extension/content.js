@@ -29,6 +29,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     alert('Inventory Intelligence: تم انتهاء عملية الأتمتة بالكامل!');
   }
+  
+  if (request.action === 'UPDATE_PROGRESS') {
+    const statusEl = document.getElementById('saas-status');
+    if (statusEl) {
+      statusEl.innerText = '⏳ ' + request.message;
+      statusEl.style.color = '#f59e0b';
+    }
+  }
 });
 
 function injectFloatingUI(syncState) {
