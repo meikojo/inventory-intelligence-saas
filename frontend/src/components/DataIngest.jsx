@@ -45,16 +45,40 @@ const DataIngest = () => {
     setLoading(true);
     setMessage(null);
 
-    // TODO: The actual parsing and backend integration will go here.
-    // For now, we simulate success
-    setTimeout(() => {
-      setLoading(false);
-      setMessage({ 
-        type: 'success', 
-        text: `تم استلام تقرير الـ ${activeTab === 'sales' ? 'مبيعات' : 'مخزون'} بنجاح! سيتم معالجته قريباً.` 
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('store_id', selectedStore);
+      if (activeTab === 'sales') {
+        formData.append('fallback_date', reportDate);
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const endpoint = activeTab === 'sales' ? '/api/ingest/sales' : '/api/ingest/inventory';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://inventory-intelligence-saas-api.vercel.app';
+      
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: formData
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.detail || 'حدث خطأ أثناء معالجة الملف');
+      }
+
+      setMessage({ type: 'success', text: result.message || 'تم معالجة الملف بنجاح!' });
       setFile(null);
-    }, 1500);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
