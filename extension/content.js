@@ -13,8 +13,31 @@ chrome.runtime.sendMessage({ action: 'GET_SYNC_STATE' }, (state) => {
       extractAndUploadAutomated(currentDate, state.storeId);
     }, 5000); // Wait 5 seconds for page data to load
   } else {
-    // Normal mode, just inject UI
-    setTimeout(() => injectFloatingUI(null), 1500);
+    // Check if launched from SaaS website bridge
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('saas_auto_sync') === 'true') {
+      const bridgeStoreId = urlParams.get('storeId');
+      const bridgeStartDate = urlParams.get('startDate');
+      const bridgeEndDate = urlParams.get('endDate');
+      
+      console.log("Inventory SaaS: Waking up from Bridge Command!", { bridgeStoreId, bridgeStartDate, bridgeEndDate });
+      
+      // Notify user via UI
+      injectFloatingUI({ isSyncing: true, storeId: bridgeStoreId, currentIndex: 0, datesToSync: ['جاري تهيئة الروبوت...'] });
+      
+      setTimeout(() => {
+        chrome.runtime.sendMessage({
+          action: 'START_URL_SYNC',
+          storeId: bridgeStoreId,
+          startDate: bridgeStartDate,
+          endDate: bridgeEndDate
+        });
+      }, 2000);
+      
+    } else {
+      // Normal mode, just inject UI
+      setTimeout(() => injectFloatingUI(null), 1500);
+    }
   }
 });
 

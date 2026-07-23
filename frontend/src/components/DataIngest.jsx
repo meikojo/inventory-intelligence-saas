@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Upload, Calendar, Package, FileSpreadsheet, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, Calendar, Package, FileSpreadsheet, AlertCircle, Loader2, Database, Play } from 'lucide-react';
 import Papa from 'papaparse'; // Assume we will use it for processing later
 
 const DataIngest = () => {
@@ -12,10 +12,22 @@ const DataIngest = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
+  // Scraper states
+  const [scrapeStartDate, setScrapeStartDate] = useState('');
+  const [scrapeEndDate, setScrapeEndDate] = useState('');
+
   useEffect(() => {
     fetchStores();
     // Default date to today
     setReportDate(new Date().toISOString().split('T')[0]);
+    
+    // Set default dates for scraper (last 7 days)
+    const today = new Date();
+    const lastWeek = new Date();
+    lastWeek.setDate(today.getDate() - 7);
+    
+    setScrapeEndDate(today.toISOString().split('T')[0]);
+    setScrapeStartDate(lastWeek.toISOString().split('T')[0]);
   }, []);
 
   const fetchStores = async () => {
@@ -30,6 +42,25 @@ const DataIngest = () => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
     }
+  };
+
+  const triggerScraper = () => {
+    if (!selectedStore) {
+      alert("الرجاء اختيار المتجر أولاً!");
+      return;
+    }
+    
+    const store = stores.find(s => s.id === selectedStore);
+    if (!store) return;
+
+    let domain = "sellercentral.amazon.com";
+    if (store.marketplace === "AE") domain = "sellercentral.amazon.ae";
+    if (store.marketplace === "SA") domain = "sellercentral.amazon.sa";
+    if (store.marketplace === "EG") domain = "sellercentral.amazon.eg";
+    if (store.marketplace === "UK") domain = "sellercentral.amazon.co.uk";
+    
+    const magicUrl = `https://${domain}/business-reports/?saas_auto_sync=true&storeId=${selectedStore}&startDate=${scrapeStartDate}&endDate=${scrapeEndDate}`;
+    window.open(magicUrl, '_blank');
   };
 
   const handleUpload = async () => {
@@ -84,11 +115,13 @@ const DataIngest = () => {
   return (
     <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: '8px' }}>رفع التقارير والبيانات 📤</h2>
+        <h2 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Database size={32} color="var(--accent-primary)" />
+          رفع التقارير والبيانات
+        </h2>
         <p style={{ color: 'var(--text-secondary)' }}>اختر نوع التقرير (مبيعات أو مخزون) لرفعه للمتجر المحدد</p>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
         <button 
           onClick={() => { setActiveTab('sales'); setMessage(null); }}
@@ -133,14 +166,34 @@ const DataIngest = () => {
         </div>
 
         {activeTab === 'sales' && (
+          <div className="glass-card" style={{ marginBottom: '24px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '16px', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Play size={20} />
+              السحب الآلي للمبيعات (Scraper)
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '0.9rem' }}>
+              سيتم فتح متصفح أمازون وستقوم الإضافة (Extension) بسحب الأيام المحددة أوتوماتيكياً. يرجى التأكد من تسجيل الدخول في أمازون مسبقاً.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-primary)' }}>من تاريخ (From)</label>
+                <input type="date" className="input-field" style={{ width: '100%' }} value={scrapeStartDate} onChange={e => setScrapeStartDate(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-primary)' }}>إلى تاريخ (To)</label>
+                <input type="date" className="input-field" style={{ width: '100%' }} value={scrapeEndDate} onChange={e => setScrapeEndDate(e.target.value)} />
+              </div>
+            </div>
+            <button className="btn-primary" onClick={triggerScraper} disabled={!selectedStore || !scrapeStartDate || !scrapeEndDate} style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', padding: '12px' }}>
+              <Play size={20} /> بدء السحب الآلي
+            </button>
+          </div>
+        )}
+
+        {activeTab === 'sales' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>تاريخ التقرير (إذا لم يكن بداخل الملف)</label>
-            <input 
-              type="date" 
-              className="input-field" 
-              value={reportDate} 
-              onChange={(e) => setReportDate(e.target.value)} 
-            />
+            <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>تاريخ التقرير (يدوي)</label>
+            <input type="date" className="input-field" value={reportDate} onChange={(e) => setReportDate(e.target.value)} />
           </div>
         )}
 
